@@ -31,22 +31,26 @@ class MannequinPostureVersionError extends Error
 	}
 }
 
-function createScene()
+function createScene(mountElement, className, animate = () => {})
 {
+	const {width, height} = mountElement.getBoundingClientRect();
+	const ratio = width / height;
 	renderer = new THREE.WebGLRenderer({antialias:true});
-		renderer.setSize( window.innerWidth, window.innerHeight );
-		renderer.domElement.style = 'width:100%; height:100%; position:fixed; top:0; left:0;';
+		if (className) {
+			renderer.domElement.className = className;
+		}
 		renderer.shadowMap.enabled = true;
-		renderer.setAnimationLoop(drawFrame);
-		document.body.appendChild( renderer.domElement );
+		renderer.setAnimationLoop(() => drawFrame(animate));
+		renderer.setSize( width, height );
+		mountElement.appendChild( renderer.domElement );
 
 
 	scene = new THREE.Scene();
-		scene.background = new THREE.Color('gainsboro');
-		scene.fog = new THREE.Fog('gainsboro',100,600);
+		scene.background = new THREE.Color('white');
+		// scene.fog = new THREE.Fog('gainsboro',100,600);
 
 
-	camera = new THREE.PerspectiveCamera( 30, window.innerWidth/window.innerHeight, 0.1, 2000 );
+	camera = new THREE.PerspectiveCamera( 30, ratio, 0.1, 2000 );
 		camera.position.set(0,0,150);
 
 
@@ -60,10 +64,12 @@ function createScene()
 
 	function onWindowResize( event )
 	{
-		camera.aspect = window.innerWidth / window.innerHeight;
+		const {width, height} = mountElement.getBoundingClientRect();
+		const ratio = width / height;
+		camera.aspect = ratio;
 		camera.updateProjectionMatrix();
 
-		renderer.setSize( window.innerWidth, window.innerHeight, true );
+		renderer.setSize( width, height, true );
 	}
 	window.addEventListener( 'resize', onWindowResize, false );
 	onWindowResize();
@@ -71,12 +77,12 @@ function createScene()
 
 	var ground = new THREE.Mesh(
 			new THREE.PlaneBufferGeometry(1000,1000),
-			new THREE.MeshPhongMaterial({color:'antiquewhite',shininess:1})
+			new THREE.MeshPhongMaterial({color:'white'})
 		);
 		ground.receiveShadow = true;
 		ground.position.y = -29.5;
 		ground.rotation.x = -Math.PI/2;
-		scene.add( ground );
+		// scene.add( ground );
 
 
 	clock = new THREE.Clock();
@@ -85,7 +91,7 @@ function createScene()
 } // createScene
 
 
-function drawFrame()
+function drawFrame(animate)
 {
 	animate(100*clock.getElapsedTime());
 	renderer.render( scene, camera );
